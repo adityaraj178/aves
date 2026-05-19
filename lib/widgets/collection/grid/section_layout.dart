@@ -9,10 +9,14 @@ class SectionedEntryListLayoutProvider extends SectionedListLayoutProvider<AvesE
   final CollectionLens collection;
   final bool selectable;
 
+  @override
+  final Set<SectionKey> collapsedSectionKeys;
+
   SectionedEntryListLayoutProvider({
     super.key,
     required this.collection,
     required this.selectable,
+    this.collapsedSectionKeys = const {},
     required super.scrollableWidth,
     required super.tileLayout,
     required super.columnCount,
@@ -36,7 +40,7 @@ class SectionedEntryListLayoutProvider extends SectionedListLayoutProvider<AvesE
 
   @override
   double getHeaderExtent(BuildContext context, SectionKey sectionKey) {
-    return CollectionSectionHeader.getPreferredHeight(context, scrollableWidth, collection.source, sectionKey);
+    return CollectionSectionHeader.getPreferredHeight(context, scrollableWidth, collection.source, sectionKey, collapsible: true);
   }
 
   @override

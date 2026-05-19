@@ -30,6 +30,7 @@ import 'package:aves/widgets/common/extensions/media_query.dart';
 import 'package:aves/widgets/common/grid/draggable_thumb_label.dart';
 import 'package:aves/widgets/common/grid/item_tracker.dart';
 import 'package:aves/widgets/common/grid/scaling.dart';
+import 'package:aves/widgets/common/grid/sections/collapsed.dart';
 import 'package:aves/widgets/common/grid/sections/fixed/scale_grid.dart';
 import 'package:aves/widgets/common/grid/sections/list_layout.dart';
 import 'package:aves/widgets/common/grid/sections/section_layout.dart';
@@ -137,7 +138,9 @@ class _CollectionGridContentState extends State<_CollectionGridContent> {
     final selectable = context.select<ValueNotifier<AppMode>, bool>((v) => v.value.canSelectMedia);
     final settingsRouteKey = context.read<TileExtentController>().settingsRouteKey;
     final tileLayout = context.select<Settings, TileLayout>((v) => v.getTileLayout(settingsRouteKey));
-    return Consumer<CollectionLens>(
+    return ChangeNotifierProvider<CollapsedSections>(
+      create: (_) => CollapsedSections(),
+      child: Consumer<CollectionLens>(
       builder: (context, collection, child) {
         final sectionedListLayoutProvider = ValueListenableBuilder<double>(
           valueListenable: context.select<TileExtentController, ValueNotifier<double>>((controller) => controller.extentNotifier),
@@ -171,57 +174,61 @@ class _CollectionGridContentState extends State<_CollectionGridContent> {
                           },
                           child: StreamBuilder(
                             stream: source.eventBus.on<AspectRatioChangedEvent>(),
-                            builder: (context, snapshot) => SectionedEntryListLayoutProvider(
-                              collection: collection,
-                              selectable: selectable,
-                              scrollableWidth: scrollableWidth,
-                              tileLayout: tileLayout,
-                              columnCount: columnCount,
-                              spacing: tileSpacing,
-                              horizontalPadding: horizontalPadding,
-                              tileExtent: thumbnailExtent,
-                              tileBuilder: (entry, tileSize) {
-                                final extent = tileSize.shortestSide;
-                                return ListenableBuilder(
-                                  listenable: favourites,
-                                  builder: (context, child) {
-                                    Widget tile = InteractiveTile(
-                                      key: ValueKey(entry.id),
-                                      collection: collection,
-                                      entry: entry,
-                                      thumbnailExtent: extent,
-                                      tileLayout: tileLayout,
-                                      isScrollingNotifier: _isScrollingNotifier,
-                                    );
-                                    if (!settings.useTvLayout) return tile;
+                            builder: (context, snapshot) {
+                              final collapsedSections = context.watch<CollapsedSections>();
+                              return SectionedEntryListLayoutProvider(
+                                collection: collection,
+                                selectable: selectable,
+                                collapsedSectionKeys: collapsedSections.collapsedKeys,
+                                scrollableWidth: scrollableWidth,
+                                tileLayout: tileLayout,
+                                columnCount: columnCount,
+                                spacing: tileSpacing,
+                                horizontalPadding: horizontalPadding,
+                                tileExtent: thumbnailExtent,
+                                tileBuilder: (entry, tileSize) {
+                                  final extent = tileSize.shortestSide;
+                                  return ListenableBuilder(
+                                    listenable: favourites,
+                                    builder: (context, child) {
+                                      Widget tile = InteractiveTile(
+                                        key: ValueKey(entry.id),
+                                        collection: collection,
+                                        entry: entry,
+                                        thumbnailExtent: extent,
+                                        tileLayout: tileLayout,
+                                        isScrollingNotifier: _isScrollingNotifier,
+                                      );
+                                      if (!settings.useTvLayout) return tile;
 
-                                    return Focus(
-                                      onFocusChange: (focused) {
-                                        if (focused) {
-                                          _focusedItemNotifier.value = entry;
-                                        } else if (_focusedItemNotifier.value == entry) {
-                                          _focusedItemNotifier.value = null;
-                                        }
-                                      },
-                                      child: ValueListenableBuilder<AvesEntry?>(
-                                        valueListenable: _focusedItemNotifier,
-                                        builder: (context, focusedItem, child) {
-                                          return AnimatedScale(
-                                            scale: focusedItem == entry ? 1 : .9,
-                                            curve: Curves.fastOutSlowIn,
-                                            duration: context.select<DurationsData, Duration>((v) => v.tvImageFocusAnimation),
-                                            child: child!,
-                                          );
+                                      return Focus(
+                                        onFocusChange: (focused) {
+                                          if (focused) {
+                                            _focusedItemNotifier.value = entry;
+                                          } else if (_focusedItemNotifier.value == entry) {
+                                            _focusedItemNotifier.value = null;
+                                          }
                                         },
-                                        child: tile,
-                                      ),
-                                    );
-                                  },
-                                );
-                              },
-                              tileAnimationDelay: tileAnimationDelay,
-                              child: child!,
-                            ),
+                                        child: ValueListenableBuilder<AvesEntry?>(
+                                          valueListenable: _focusedItemNotifier,
+                                          builder: (context, focusedItem, child) {
+                                            return AnimatedScale(
+                                              scale: focusedItem == entry ? 1 : .9,
+                                              curve: Curves.fastOutSlowIn,
+                                              duration: context.select<DurationsData, Duration>((v) => v.tvImageFocusAnimation),
+                                              child: child!,
+                                            );
+                                          },
+                                          child: tile,
+                                        ),
+                                      );
+                                    },
+                                  );
+                                },
+                                tileAnimationDelay: tileAnimationDelay,
+                                child: child!,
+                              );
+                            },
                           ),
                         );
                       },
@@ -243,6 +250,7 @@ class _CollectionGridContentState extends State<_CollectionGridContent> {
         );
         return sectionedListLayoutProvider;
       },
+    ),
     );
   }
 

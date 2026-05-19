@@ -83,11 +83,11 @@ class CollectionSectionHeader extends StatelessWidget {
     );
   }
 
-  static double getPreferredHeight(BuildContext context, double maxWidth, CollectionSource source, SectionKey sectionKey) {
+  static double getPreferredHeight(BuildContext context, double maxWidth, CollectionSource source, SectionKey sectionKey, {bool collapsible = false}) {
     var headerExtent = 0.0;
     if (sectionKey is EntryAlbumSectionKey) {
       // only compute height for album headers, as they're the only likely ones to split on multiple lines
-      headerExtent = AlbumSectionHeader.getPreferredHeight(context, maxWidth, source, sectionKey);
+      headerExtent = AlbumSectionHeader.getPreferredHeight(context, maxWidth, source, sectionKey, forceTrailing: collapsible);
     }
 
     final textScaler = MediaQuery.textScalerOf(context);

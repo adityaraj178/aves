@@ -6,6 +6,7 @@ import 'package:aves/theme/icons.dart';
 import 'package:aves/theme/styles.dart';
 import 'package:aves/widgets/common/basic/gestures/gesture_detector.dart';
 import 'package:aves/widgets/common/extensions/build_context.dart';
+import 'package:aves/widgets/common/grid/sections/collapsed.dart';
 import 'package:aves/widgets/common/grid/sections/list_layout.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -36,9 +37,39 @@ class SectionHeader<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final onTap = selectable ? () => _toggleSectionSelection(context) : null;
+    final collapsedSections = Provider.maybeOf<CollapsedSections>(context, listen: true);
+    final isSelecting = selectable ? context.select<Selection<T>, bool>((v) => v.isSelecting) : false;
+    final isCollapsible = collapsedSections != null && !isSelecting;
+    final isCollapsed = isCollapsible && collapsedSections.isCollapsed(sectionKey);
+
+    VoidCallback? onTap;
+    if (selectable) {
+      if (isCollapsible) {
+        onTap = () => collapsedSections.toggle(sectionKey);
+      } else {
+        onTap = () => _toggleSectionSelection(context);
+      }
+    }
 
     final theme = Theme.of(context);
+
+    // Build trailing with optional collapse chevron
+    Widget? effectiveTrailing = trailing;
+    if (isCollapsible) {
+      final chevron = AnimatedRotation(
+        turns: isCollapsed ? -0.25 : 0,
+        duration: const Duration(milliseconds: 200),
+        child: const Icon(Icons.expand_more, size: 20),
+      );
+      if (effectiveTrailing != null) {
+        effectiveTrailing = Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [effectiveTrailing, const SizedBox(width: 4), chevron],
+        );
+      } else {
+        effectiveTrailing = chevron;
+      }
+    }
 
     Widget child = Container(
       padding: padding,
@@ -87,12 +118,12 @@ class SectionHeader<T> extends StatelessWidget {
                 text: title,
                 style: _headerTextStyle(context),
               ),
-              if (trailing != null)
+              if (effectiveTrailing != null)
                 WidgetSpan(
                   alignment: widgetSpanAlignment,
                   child: Container(
                     margin: trailingMargin,
-                    child: trailing,
+                    child: effectiveTrailing,
                   ),
                 ),
             ],

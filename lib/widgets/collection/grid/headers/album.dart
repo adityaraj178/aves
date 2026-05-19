@@ -48,14 +48,14 @@ class AlbumSectionHeader extends StatelessWidget {
     );
   }
 
-  static double getPreferredHeight(BuildContext context, double maxWidth, CollectionSource source, EntryAlbumSectionKey sectionKey) {
+  static double getPreferredHeight(BuildContext context, double maxWidth, CollectionSource source, EntryAlbumSectionKey sectionKey, {bool forceTrailing = false}) {
     final directory = sectionKey.directory ?? context.l10n.sectionUnknown;
     return SectionHeader.getPreferredHeight(
       context: context,
       maxWidth: maxWidth,
       title: source.getStoredAlbumDisplayName(context, directory),
       hasLeading: covers.effectiveAlbumType(directory) != AlbumType.regular,
-      hasTrailing: androidFileUtils.isOnRemovableStorage(directory),
+      hasTrailing: forceTrailing || androidFileUtils.isOnRemovableStorage(directory),
     );
   }
 }

@@ -11,6 +11,7 @@ typedef TileBuilder<T> = Widget Function(T item, Size tileSize);
 
 abstract class SectionLayoutBuilder<T> {
   final Map<SectionKey, List<T>> sections;
+  final Set<SectionKey> collapsedSectionKeys;
   final bool showHeaders;
   final double Function(BuildContext context, SectionKey sectionKey) getHeaderExtent;
   final Widget Function(BuildContext context, SectionKey sectionKey, double headerExtent) buildHeader;
@@ -24,6 +25,7 @@ abstract class SectionLayoutBuilder<T> {
 
   const SectionLayoutBuilder({
     required this.sections,
+    required this.collapsedSectionKeys,
     required this.showHeaders,
     required this.getHeaderExtent,
     required this.buildHeader,

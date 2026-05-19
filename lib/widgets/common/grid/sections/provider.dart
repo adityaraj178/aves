@@ -45,6 +45,7 @@ abstract class SectionedListLayoutProvider<T> extends StatelessWidget {
           case .mosaic:
             return MosaicSectionLayoutBuilder<T>(
               sections: sections,
+              collapsedSectionKeys: collapsedSectionKeys,
               showHeaders: showHeaders,
               getHeaderExtent: getHeaderExtent,
               buildHeader: buildHeader,
@@ -63,6 +64,7 @@ abstract class SectionedListLayoutProvider<T> extends StatelessWidget {
           case .list:
             return FixedExtentSectionLayoutBuilder<T>(
               sections: sections,
+              collapsedSectionKeys: collapsedSectionKeys,
               showHeaders: showHeaders,
               buildHeader: buildHeader,
               getHeaderExtent: getHeaderExtent,
@@ -85,6 +87,8 @@ abstract class SectionedListLayoutProvider<T> extends StatelessWidget {
   bool get showHeaders;
 
   Map<SectionKey, List<T>> get sections;
+
+  Set<SectionKey> get collapsedSectionKeys => const {};
 
   double getHeaderExtent(BuildContext context, SectionKey sectionKey);
 

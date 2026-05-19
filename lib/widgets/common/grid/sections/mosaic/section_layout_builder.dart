@@ -25,6 +25,7 @@ class MosaicSectionLayoutBuilder<T> extends SectionLayoutBuilder<T> {
 
   MosaicSectionLayoutBuilder({
     required super.sections,
+    required super.collapsedSectionKeys,
     required super.showHeaders,
     required super.getHeaderExtent,
     required super.buildHeader,
@@ -51,7 +52,7 @@ class MosaicSectionLayoutBuilder<T> extends SectionLayoutBuilder<T> {
           (sectionKey) => buildSectionLayout(
             headerExtent: showHeaders ? getHeaderExtent(context, sectionKey) : 0.0,
             sectionKey: sectionKey,
-            section: sections[sectionKey]!,
+            section: collapsedSectionKeys.contains(sectionKey) ? const [] : sections[sectionKey]!,
             animate: animate,
           ),
         )
